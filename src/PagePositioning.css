@@ -1,0 +1,531 @@
+/* PagePositioning.css - poziționare cu paginile dispuse într-un grid */
+
+/* Configurare pentru canvas-ul din fundal */
+.background-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #000000;
+}
+
+/* Stiluri pentru body în timpul navigării */
+body.navigating {
+  cursor: move;
+}
+
+/* 
+  SOLUȚIE NOUĂ PENTRU MIȘCAREA CAMEREI:
+  - Camera se centrează pe pagina de plecare în timpul zoom-out (primii 40% din animație)
+  - Apoi camera face pan către pagina de destinație (de la 40% la 100% din animație)
+  - La final, camera face zoom-in pe pagina de destinație
+  - Animații diferite și specifice pentru fiecare combinație de pagini (sursă→destinație)
+*/
+
+/* Container care funcționează ca o "cameră virtuală" */
+.spatial-view {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  perspective: 2000px;
+  perspective-origin: center center;
+}
+
+/* Container pentru toate paginile - asigură transmiterea perspectivei spre copii */
+.spatial-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transform-origin: center center;
+  transition: transform 0.5s ease-in-out; /* Tranziție generală mai scurtă */
+}
+
+/* Definirea fiecărei pagini - toate sunt vizibile și dispuse într-un grid */
+.page-wrapper {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  transition: all 0.5s ease-in-out;
+  opacity: 1; /* Paginile sunt complet opace tot timpul */
+  background-color: rgba(20, 30, 50, 0.2);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transform-origin: center center;
+}
+
+/* Poziționarea paginilor într-un grid cu 120vw între ele */
+.page-wrapper.home {
+  left: calc(50% - 50vw); /* Centrat orizontal */
+  top: 0;
+  transform: translateZ(0);
+}
+
+.page-wrapper.services {
+  left: calc(50% - 50vw - 120vw); /* La stânga */
+  top: 0;
+  transform: translateZ(0);
+}
+
+.page-wrapper.portfolio {
+  left: calc(50% - 50vw + 120vw); /* La dreapta */
+  top: 0;
+  transform: translateZ(0);
+}
+
+.page-wrapper.contact {
+  left: calc(50% - 50vw); /* Centrat orizontal */
+  top: 120vh; /* Jos */
+  transform: translateZ(0);
+}
+
+/* Transformările pentru a muta "camera" la fiecare pagină */
+.spatial-container.home {
+  transform: translate3d(0, 0, 0);
+}
+
+.spatial-container.services {
+  transform: translate3d(120vw, 0, 0);
+}
+
+.spatial-container.portfolio {
+  transform: translate3d(-120vw, 0, 0);
+}
+
+.spatial-container.contact {
+  transform: translate3d(0, -120vh, 0);
+}
+
+/* Stiluri pentru pagina activă */
+.page-wrapper.active {
+  opacity: 1;
+  z-index: 10;
+  box-shadow: 0 0 40px rgba(0, 100, 255, 0.15);
+  border: 1px solid rgba(100, 150, 255, 0.2);
+  transform: translateZ(20px) scale(1.05); /* Pagina activă este mai aproape */
+}
+
+/* 
+  ANIMAȚII PENTRU TRANZIȚII:
+  Tranziție în 3 faze: zoom out de pe poziția curentă, panning către destinație, zoom in
+*/
+
+.transitioning[data-from][data-to] {
+  animation-duration: 2.5s !important;
+  animation-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+  animation-fill-mode: forwards !important;
+}
+
+/* Adăugăm margini paginilor care sunt vizibile doar în timpul zoom-out */
+.transitioning .page-wrapper {
+  transition: transform 0.7s cubic-bezier(0.645, 0.045, 0.355, 1),
+              box-shadow 0.5s ease,
+              border 0.5s ease-in-out; /* Eliminăm tranziția pentru opacitate și blur */
+  border: 3px solid rgba(0, 0, 0, 0); /* Border inițial transparent */
+}
+
+/* Evidențierea marginilor în timpul tranzitiei (zoom-out) */
+.transitioning .page-wrapper.home {
+  border-color: rgba(100, 200, 255, 0.8); /* Albastru pentru Home */
+}
+
+.transitioning .page-wrapper.services {
+  border-color: rgba(255, 100, 100, 0.8); /* Roșu pentru Services */
+}
+
+.transitioning .page-wrapper.portfolio {
+  border-color: rgba(100, 255, 100, 0.8); /* Verde pentru Portfolio */
+}
+
+.transitioning .page-wrapper.contact {
+  border-color: rgba(255, 255, 100, 0.8); /* Galben pentru Contact */
+}
+
+/* Îmbunătățim aspectul marginilor cu efecte de glow */
+.transitioning .page-wrapper {
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.transitioning .page-wrapper.home {
+  box-shadow: 0 0 20px rgba(100, 200, 255, 0.4);
+}
+
+.transitioning .page-wrapper.services {
+  box-shadow: 0 0 20px rgba(255, 100, 100, 0.4);
+}
+
+.transitioning .page-wrapper.portfolio {
+  box-shadow: 0 0 20px rgba(100, 255, 100, 0.4);
+}
+
+.transitioning .page-wrapper.contact {
+  box-shadow: 0 0 20px rgba(255, 255, 100, 0.4);
+}
+
+/* Animații specifice pentru fiecare combinație de pagini (sursă->destinație) */
+.transitioning[data-from="home"][data-to="services"] {
+  animation-name: zoomOutHomeAndPanToServices !important;
+}
+
+.transitioning[data-from="home"][data-to="portfolio"] {
+  animation-name: zoomOutHomeAndPanToPortfolio !important;
+}
+
+.transitioning[data-from="home"][data-to="contact"] {
+  animation-name: zoomOutHomeAndPanToContact !important;
+}
+
+.transitioning[data-from="services"][data-to="home"] {
+  animation-name: zoomOutServicesAndPanToHome !important;
+}
+
+.transitioning[data-from="services"][data-to="portfolio"] {
+  animation-name: zoomOutServicesAndPanToPortfolio !important;
+}
+
+.transitioning[data-from="services"][data-to="contact"] {
+  animation-name: zoomOutServicesAndPanToContact !important;
+}
+
+.transitioning[data-from="portfolio"][data-to="home"] {
+  animation-name: zoomOutPortfolioAndPanToHome !important;
+}
+
+.transitioning[data-from="portfolio"][data-to="services"] {
+  animation-name: zoomOutPortfolioAndPanToServices !important;
+}
+
+.transitioning[data-from="portfolio"][data-to="contact"] {
+  animation-name: zoomOutPortfolioAndPanToContact !important;
+}
+
+.transitioning[data-from="contact"][data-to="home"] {
+  animation-name: zoomOutContactAndPanToHome !important;
+}
+
+.transitioning[data-from="contact"][data-to="services"] {
+  animation-name: zoomOutContactAndPanToServices !important;
+}
+
+.transitioning[data-from="contact"][data-to="portfolio"] {
+  animation-name: zoomOutContactAndPanToPortfolio !important;
+}
+
+/* Keyframes pentru animațiile din Home spre alte pagini */
+@keyframes zoomOutHomeAndPanToServices {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(48vw, 0, -300px);
+  }
+}
+
+@keyframes zoomOutHomeAndPanToPortfolio {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(-48vw, 0, -300px);
+  }
+}
+
+@keyframes zoomOutHomeAndPanToContact {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(0, -48vh, -300px);
+  }
+}
+
+/* Keyframes pentru animațiile din alte pagini spre Home */
+@keyframes zoomOutServicesAndPanToHome {
+  0% {
+    transform: scale(1) translate3d(120vw, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(120vw, 0, -300px);
+  }
+  70% {
+    transform: scale(0.4) translate3d(48vw, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+  }
+}
+
+@keyframes zoomOutPortfolioAndPanToHome {
+  0% {
+    transform: scale(1) translate3d(-120vw, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(-120vw, 0, -300px);
+  }
+  70% {
+    transform: scale(0.4) translate3d(-48vw, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+  }
+}
+
+@keyframes zoomOutContactAndPanToHome {
+  0% {
+    transform: scale(1) translate3d(0, -120vh, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(0, -120vh, -300px);
+  }
+  70% {
+    transform: scale(0.4) translate3d(0, -48vh, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+  }
+}
+
+/* Animații noi pentru celelalte combinații */
+@keyframes zoomOutServicesAndPanToPortfolio {
+  0% {
+    transform: scale(1) translate3d(120vw, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(120vw, 0, -300px);
+  }
+  60% {
+    /* Punct intermediar pentru ruta directă - traiectorie mai amplă */
+    transform: scale(0.35) translate3d(0, -30vh, -600px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(-48vw, 0, -300px);
+  }
+}
+
+@keyframes zoomOutServicesAndPanToContact {
+  0% {
+    transform: scale(1) translate3d(120vw, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(120vw, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(0, -48vh, -300px);
+  }
+}
+
+@keyframes zoomOutPortfolioAndPanToServices {
+  0% {
+    transform: scale(1) translate3d(-120vw, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(-120vw, 0, -300px);
+  }
+  60% {
+    /* Punct intermediar pentru ruta directă - traiectorie mai amplă */
+    transform: scale(0.35) translate3d(0, -20vh, -600px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(48vw, 0, -300px);
+  }
+}
+
+@keyframes zoomOutPortfolioAndPanToContact {
+  0% {
+    transform: scale(1) translate3d(-120vw, 0, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(-120vw, 0, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(0, -48vh, -300px);
+  }
+}
+
+@keyframes zoomOutContactAndPanToServices {
+  0% {
+    transform: scale(1) translate3d(0, -120vh, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(0, -120vh, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(48vw, 0, -300px);
+  }
+}
+
+@keyframes zoomOutContactAndPanToPortfolio {
+  0% {
+    transform: scale(1) translate3d(0, -120vh, 0);
+  }
+  30% {
+    transform: scale(0.4) translate3d(0, -120vh, -300px);
+  }
+  100% {
+    transform: scale(0.4) translate3d(-48vw, 0, -300px);
+  }
+}
+
+/* Zoom-in pentru fiecare pagină, pornind de la poziția la care a ajuns camera */
+.spatial-container.to-home:not(.transitioning) {
+  animation: zoomInToHome 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.spatial-container.to-services:not(.transitioning) {
+  animation: zoomInToServices 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.spatial-container.to-portfolio:not(.transitioning) {
+  animation: zoomInToPortfolio 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.spatial-container.to-contact:not(.transitioning) {
+  animation: zoomInToContact 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes zoomInToHome {
+  0% {
+    transform: scale(0.4) translate3d(0, 0, -300px);
+    filter: blur(2px) brightness(0.7);
+  }
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: blur(0) brightness(1);
+  }
+}
+
+@keyframes zoomInToServices {
+  0% {
+    transform: scale(0.4) translate3d(48vw, 0, -300px);
+    filter: blur(2px) brightness(0.7);
+  }
+  100% {
+    transform: scale(1) translate3d(120vw, 0, 0);
+    filter: blur(0) brightness(1);
+  }
+}
+
+@keyframes zoomInToPortfolio {
+  0% {
+    transform: scale(0.4) translate3d(-48vw, 0, -300px);
+    filter: blur(2px) brightness(0.7);
+  }
+  100% {
+    transform: scale(1) translate3d(-120vw, 0, 0);
+    filter: blur(0) brightness(1);
+  }
+}
+
+@keyframes zoomInToContact {
+  0% {
+    transform: scale(0.4) translate3d(0, -48vh, -300px);
+    filter: blur(2px) brightness(0.7);
+  }
+  100% {
+    transform: scale(1) translate3d(0, -120vh, 0);
+    filter: blur(0) brightness(1);
+  }
+}
+
+/* Efecte pentru paginile în timpul tranziției */
+.transitioning .page-wrapper {
+  transition: transform 0.7s cubic-bezier(0.645, 0.045, 0.355, 1),
+              box-shadow 0.5s ease,
+              border 0.5s ease-in-out; /* Eliminăm tranziția pentru opacitate și blur */
+  border: 3px solid rgba(0, 0, 0, 0); /* Border inițial transparent */
+}
+
+.transitioning .page-wrapper:not(.active) {
+  opacity: 1; /* Menținem opacitatea maximă */
+  filter: none; /* Eliminăm efectul de blur */
+}
+
+/* Efecte îmbunătățite pentru pagina destinație */
+.transitioning[data-to="home"] .page-wrapper.home,
+.transitioning[data-to="services"] .page-wrapper.services,
+.transitioning[data-to="portfolio"] .page-wrapper.portfolio,
+.transitioning[data-to="contact"] .page-wrapper.contact {
+  opacity: 1;
+  filter: none;
+  box-shadow: 0 0 100px rgba(100, 200, 255, 0.5);
+  border: 3px solid rgba(255, 255, 255, 0.8); /* Border alb pentru pagina destinație */
+  transform: scale(1.15) translateZ(30px) !important;
+  z-index: 20 !important;
+}
+
+/* Efecte de hover pentru a evidenția interactivitatea */
+.page-wrapper:not(.active):hover {
+  opacity: 1;
+  transform: translateZ(5px) scale(1.02);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+/* Efecte pentru conținutul paginii pe durata tranziției */
+.transitioning .page-container {
+  animation: none; /* Eliminăm animația */
+}
+
+/* Îmbunătățiri pentru tranziții - animații mai fluide */
+.side-navigation button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Indicator vizual pentru butonul destinație */
+.side-navigation button.target {
+  background-color: rgba(100, 200, 255, 0.2);
+  box-shadow: 0 0 15px rgba(100, 200, 255, 0.3);
+}
+
+/* Indicator vizual în timpul tranzițiilor */
+.spatial-view::after {
+  content: '';
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 10px;
+  height: 10px;
+  background-color: transparent;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+  z-index: 1000;
+}
+
+body.navigating .spatial-view::after {
+  background-color: rgba(255, 100, 100, 0.8);
+  box-shadow: 0 0 10px rgba(255, 100, 100, 0.6);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+} 
