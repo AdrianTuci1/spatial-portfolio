@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# Tucean.dev - Site de Portofoliu Interactiv
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Un site de portofoliu cu navigare spațială, construit cu React. Site-ul prezintă serviciile și portofoliul într-un mod interactiv și vizual captivant.
 
-## Available Scripts
+## Caracteristici
 
-In the project directory, you can run:
+- **Navigare Spațială**: Interfață inovativă cu navigare între pagini în spațiu 2D
+- **Design Imersiv**: Interfață utilizator modernă și captivantă
+- **Interactivitate**: Tranziții fluide între pagini
+- **Responsive**: Se adaptează la diferite dimensiuni ale ecranului
 
-### `npm start`
+## Tehnologii Utilizate
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- React.js
+- CSS3 cu animații avansate
+- HTML5 Canvas pentru efecte de fundal
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Instalare
 
-### `npm test`
+1. Clonează repository-ul
+   ```
+   git clone https://github.com/tucian/tucean.dev.git
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Navighează în directorul proiectului
+   ```
+   cd tucean.dev
+   ```
 
-### `npm run build`
+3. Instalează dependențele
+   ```
+   npm install
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Pornește serverul de dezvoltare
+   ```
+   npm start
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+5. Deschide [http://localhost:3000](http://localhost:3000) pentru a vedea aplicația în browser
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Structura Proiectului
 
-### `npm run eject`
+```
+tucean.dev/
+├── public/             # Fișiere publice și statice
+├── src/                # Codul sursă
+│   ├── components/     # Componente React pentru fiecare pagină
+│   ├── assets/         # Imagini și resurse
+│   ├── App.js          # Componenta principală cu logica de navigare
+│   ├── App.css         # Stiluri pentru întreaga aplicație
+│   └── index.js        # Punctul de intrare
+└── README.md           # Documentația proiectului
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Organizarea Paginilor
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Site-ul folosește un model de navigare spațială cu următoarea structură:
+- **Servicii** - poziționată în stânga paginii principale
+- **Acasă** - pagina centrală/principală
+- **Portofoliu** - poziționată în dreapta paginii principale
+- **Contact** - poziționată sub pagina principală
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Navigarea se face prin săgeți directionale sau prin meniul principal.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Personalizare
 
-## Learn More
+- Logica de navigare se află în `src/App.js`
+- Stilurile generale în `src/App.css`
+- Componentele pentru fiecare pagină în `src/components/`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Deployment
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Pentru a face build pentru producție:
 
-### Code Splitting
+```
+npm run build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Această comandă va crea un director `build` cu fișierele optimizate pentru producție.
 
-### Analyzing the Bundle Size
+## Licență
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+[MIT](LICENSE)
 
-### Making a Progressive Web App
+## Contact
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Pentru întrebări sau colaborări, contactați-mă la adresa: contact@tucean.dev
