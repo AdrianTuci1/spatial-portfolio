@@ -1,189 +1,152 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import './App.css';
-import './PagePositioning.css';
-import HomePage from './components/HomePage';
-import ServicesPage from './components/ServicesPage';
-import PortfolioPage from './components/PortfolioPage';
-import ContactPage from './components/ContactPage';
-import BackgroundCanvas from './components/BackgroundCanvas';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [targetPage, setTargetPage] = useState(null);
-  const [backgroundStyle, setBackgroundStyle] = useState({});
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const spatialContainerRef = useRef(null);
-  
-  // Constantele pentru duratele animațiilor - actualizate pentru noile tranziții
-  const ZOOM_OUT_DURATION = 1250; // 1.25s pentru zoom-out, actualizat pentru a coincide cu animația mai lungă
-  const ZOOM_IN_DURATION = 1000; // 1s pentru zoom-in, conform CSS
-  const ANIMATION_BUFFER = 50; // Buffer redus pentru a asigura finalizarea completă
 
-  // Navigation map with spatial relations - toate paginile sunt vizibile simultan
-  const navigationMap = {
-    home: {
-      name: 'Acasă',
-      component: HomePage,
-      left: 'services',
-      right: 'portfolio',
-      down: 'contact'
-    },
-    services: {
-      name: 'Servicii',
-      component: ServicesPage,
-      right: 'home',
-      far_right: 'portfolio'
-    },
-    portfolio: {
-      name: 'Portofoliu',
-      component: PortfolioPage,
-      left: 'home',
-      far_left: 'services'
-    },
-    contact: {
-      name: 'Contact',
-      component: ContactPage,
-      up: 'home'
-    }
-  };
+  const projects = ["Simplu", "Marmur Art", "Hotel Rivoli", "Altul"]
+  const creativeProcess = ["IDEATION", "DESIGN", "DEVELOPMENT"]
 
-  // Funcția de navigare implementează efectul de cameră
-  const navigateTo = (page) => {
-    if (navigationMap[page] && page !== currentPage && !isTransitioning) {
-      // Activează efectul de tranziție
-      setIsTransitioning(true);
-      setTargetPage(page);
-      
-      // Faza 1: Zoom out simplu - camera se retrage pentru a vedea tabloul întreg
-      if (spatialContainerRef.current) {
-        // Resetăm orice clase anterioare de destinație
-        spatialContainerRef.current.classList.remove('to-home', 'to-services', 'to-portfolio', 'to-contact');
-        
-        // Aplicăm clasa de tranziție cu informații despre pagina curentă și pagina țintă
-        spatialContainerRef.current.classList.add('transitioning');
-        spatialContainerRef.current.setAttribute('data-from', currentPage);
-        spatialContainerRef.current.setAttribute('data-to', page);
-        document.body.classList.add('navigating');
-        
-        // Așteaptă până se finalizează zoom-out înainte de a schimba pagina
-        setTimeout(() => {
-          // Faza 2: Setăm noua pagină (care mută camera în noua poziție)
-          setCurrentPage(page);
-          updateBackgroundForPage(page);
-          
-          // Adăugăm clasa to-page pentru a indica destinația animației
-          if (spatialContainerRef.current) {
-            spatialContainerRef.current.classList.add(`to-${page}`);
-          }
-          
-          // Faza 3: Eliminăm clasa transitioning pentru a permite zoom-in
-          setTimeout(() => {
-            if (spatialContainerRef.current) {
-              spatialContainerRef.current.classList.remove('transitioning');
-            }
-            
-            // Finalizare tranziție
-            setTimeout(() => {
-              setIsTransitioning(false);
-              setTargetPage(null);
-              document.body.classList.remove('navigating');
-              
-              // Eliminăm clasa to-page și atributele data după finalizarea animației
-              if (spatialContainerRef.current) {
-                spatialContainerRef.current.classList.remove(`to-${page}`);
-                spatialContainerRef.current.removeAttribute('data-from');
-                spatialContainerRef.current.removeAttribute('data-to');
-              }
-            }, ZOOM_IN_DURATION + ANIMATION_BUFFER); // Durata zoom-in + buffer
-          }, ANIMATION_BUFFER); // Small buffer for proper animation timing
-        }, ZOOM_OUT_DURATION + ANIMATION_BUFFER); // Durata zoom-out + buffer
-      } else {
-        // Fallback în caz că referința nu este disponibilă
-        setCurrentPage(page);
-        updateBackgroundForPage(page);
-        setIsTransitioning(false);
-        setTargetPage(null);
-      }
-    }
-  };
-
-  const updateBackgroundForPage = (page) => {
-    const colors = {
-      home: 'rgba(20, 30, 50, 0.9)',
-      services: 'rgba(30, 40, 70, 0.9)',
-      portfolio: 'rgba(30, 50, 80, 0.9)',
-      contact: 'rgba(25, 35, 60, 0.9)'
-    };
-
-    setBackgroundStyle({
-      background: `radial-gradient(circle at center, ${colors[page]}, rgba(5, 10, 20, 0.95))`,
-      transition: 'background 0.5s ease-out', // Timp redus pentru a se potrivi cu tranziția mai scurtă
-    });
-  };
-
-  // Main navigation menu
-  const renderMainNavigation = () => {
-    return (
-      <nav className="side-navigation">
-        <ul>
-          {Object.entries(navigationMap).map(([key, page]) => (
-            <li key={key} className={currentPage === key ? 'active' : ''}>
-              <button 
-                onClick={() => navigateTo(key)}
-                disabled={isTransitioning}
-                aria-current={currentPage === key ? 'page' : undefined}
-                className={targetPage === key ? 'target' : ''}
-              >
-                {page.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    );
-  };
-
-  useEffect(() => {
-    updateBackgroundForPage(currentPage);
-  }, [currentPage]);
+  const generateRandomColor = () => {
+    return '#' + Math.floor(Math.random()*16777215).toString(16);
+  }
 
   return (
-    <div className="App" style={backgroundStyle}>
-      <BackgroundCanvas />
-      
-      {renderMainNavigation()}
-      
-      <div className="spatial-view">
-        <div 
-          ref={spatialContainerRef}
-          className={`spatial-container ${currentPage} ${isTransitioning ? 'transitioning' : ''} ${targetPage ? `to-${targetPage}` : ''}`}
-        >
-          {/* Toate paginile sunt dispuse într-un grid cu poziționare exactă */}
-          <div className={`page-wrapper home ${currentPage === 'home' ? 'active' : ''}`}>
-            <div className="page-container">
-              <HomePage navigateTo={navigateTo} />
+    <div className="App">
+      <main>
+        <section id="home" className="hero-section">
+          <h1 className="hero-title">TUCHAN</h1>
+          <p className="hero-subtitle">Boost your<br/> digital space <br/> through immersive <br/> stories. </p>
+          <p className="mission">
+            love all you see, it’s a process
+            and you got to go through it
+            embrace everything you encounter
+            with joy.
+          </p>
+          <div className="image-placeholder">
+            <div className="image-container">
+            <img src="/images/cristal.png" alt="cristal" />
             </div>
           </div>
-          
-          <div className={`page-wrapper services ${currentPage === 'services' ? 'active' : ''}`}>
-            <div className="page-container">
-              <ServicesPage navigateTo={navigateTo} />
+        </section>
+        <section id="about" className="about-section">
+          <p className="section-description">
+            I’m a Web 
+            Designer, <br/>
+            based in <br/>
+            Bucharest <br/>
+            that tells stories <br/>
+            through my craft. <br/>
+            Looking for
+            extraordinary <br/>
+            in ordinary. I bring
+            joy to people <br/>
+            all over
+            the world.
+          </p>
+          <div className="hero-placeholder">
+            <div className="hero-container">
+              <img src="/images/imagdde.png" alt="eu" />
             </div>
           </div>
-          
-          <div className={`page-wrapper portfolio ${currentPage === 'portfolio' ? 'active' : ''}`}>
-            <div className="page-container">
-              <PortfolioPage navigateTo={navigateTo} />
-            </div>
+        </section>
+
+        <section id="projects" className="projects-section">
+          <div className="title-container">
+          <h2 className="section-title">SELECTED WORKS</h2>
+          <h2 className="section-title">'23 - '25</h2>
           </div>
-          
-          <div className={`page-wrapper contact ${currentPage === 'contact' ? 'active' : ''}`}>
-            <div className="page-container">
-              <ContactPage navigateTo={navigateTo} />
+          <div className="divider"></div>
+          <div className="projects-container">
+          {projects.map((title, index) => (
+            <div className="project-card" key={index} style={{backgroundColor: generateRandomColor()}}>
+                <h2 className="project-title">
+                  {title}
+                </h2>
             </div>
+          ))}
           </div>
+        </section>
+
+        <section id="creative" className="creative-section">
+          <div className="box">
+            <h2>THIS IS HOW IT<br/> LOOKS LIKE. THAT'S</h2>
+          </div>
+          <div className="box">
+            <h2>HOW IT FEELS <br/> LIKE</h2>
+            <div className="creative-wrapper">
+              <img src="/images/wonder.png" alt="creative" />
+            </div>
+          </div>      
+        </section>
+
+        <section id="creative" className="creative-process">
+          <h2>CREATIVE PROCESS</h2>
+          <div className="process-wrapper">
+            {creativeProcess.map((title, index) => (
+            <div className="process-card" key={index} style={{backgroundColor: generateRandomColor()}}>
+              <h3>{title}</h3>
+            </div>
+            ))}
+          </div>
+          <p>
+            It often begins with inspiration, followed by exploration, where thoughts are brainstormed and refined. 
+            Through experimentation and iteration, concepts evolve, taking shape through trial, error, and discovery. 
+            Eventually, a final form emerges — a unique expression shaped by imagination, persistence, and personal 
+            vision.
+          </p>
+        </section>
+
+        <section id="contact" className="contact-section">
+            <div className="icon-box">
+            </div>
+
+            <div className="headliner">
+              <h2>THE JOURNEY BEGINS...</h2>
+            </div>
+
+            <div className="contact-wrapper">
+              <div className="contact-text">
+                <h2>
+                  I’m friendly, <br/>
+                  but my work <br/>
+                  hits hard. <br/>
+                  Curious? <br/>
+                  Let’s cause <br/>
+                  some <br/>
+                  chaos together.
+                </h2>
+              </div>
+
+              <div className="contact-placeholders">
+                <div className="email-placeholder">
+                  <h2>EMAIL</h2>
+                  <p>tucean@gmail.com</p>
+                </div>
+                <div className="location-placeholder">
+                  <h2>LOCATION</h2>
+                  <p>Bucharest, Romania</p>
+                </div>
+                
+              </div>
+            </div>
+        </section>
+
+        <footer id="footer" className="footer-section">
+        <h1 className="hero-title">TUCHAN</h1>
+        <div className="socials">
+          <a href="https://www.instagram.com/tucean_design/">
+            <p>INSTAGRAM</p>
+          </a>
+          <a href="https://www.linkedin.com/in/tucean/">  
+            <p>LINKEDIN</p>
+          </a>        
         </div>
-      </div>
+        </footer>
+        <div className="copyright">
+          <p> © 2025 TUCHAN <br/>
+          Reproduction without vibe is strictly prohibited.</p>
+        </div>
+      </main>
     </div>
   );
 }
